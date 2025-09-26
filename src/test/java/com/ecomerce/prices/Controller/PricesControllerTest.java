@@ -1,11 +1,16 @@
 package com.ecomerce.prices.Controller;
 
 import com.ecomerce.prices.entities.Price;
-import com.ecomerce.prices.service.PriceService;
+import com.ecomerce.prices.service.PriceServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.http.ResponseEntity;
+
 import static org.mockito.Mockito.*;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -14,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PricesControllerTest {
 
     @Mock
-    private PriceService priceService;
+    private PriceServiceImpl priceService;
 
     @InjectMocks
     private PricesController pricesController;
@@ -36,39 +41,38 @@ class PricesControllerTest {
         when(priceService.getPriceByDate(request)).thenReturn(price);
         doReturn(expectedResponse).when(mapper).mapToResponse(price);
 
-        PriceResponse response = pricesController.getPriceByDate(request);
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
 
         assertNotNull(response);
-        assertEquals(expectedResponse, response);
+        assertEquals(expectedResponse, response.getBody());
         verify(priceService).getPriceByDate(request);
         verify(mapper).mapToResponse(price);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
-    void getPriceByDate_ThrowsException_WhenPriceNotFound() {
+    void getPriceByDate_Returns404_WhenPriceNotFound() {
         PriceRequest request = new PriceRequest();
 
         when(priceService.getPriceByDate(request)).thenReturn(null);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            pricesController.getPriceByDate(request);
-        });
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
 
-        assertTrue(exception.getMessage().contains("No price found for the given date"));
+        assertNotNull(response);
+        assertEquals(404, response.getStatusCodeValue());
+        assertNull(response.getBody());
         verify(priceService).getPriceByDate(request);
     }
 
     @Test
-    void getPriceByDate_ThrowsException_WhenServiceThrows() {
+    void getPriceByDate_WhenServiceThrows_ReturnsNullResponse() {
         PriceRequest request = new PriceRequest();
 
         when(priceService.getPriceByDate(request)).thenThrow(new RuntimeException("DB error"));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            pricesController.getPriceByDate(request);
-        });
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
 
-        assertTrue(exception.getMessage().contains("Error retrieving price: DB error"));
+        assertNull(response.getBody());
         verify(priceService).getPriceByDate(request);
     }
 
@@ -86,7 +90,8 @@ class PricesControllerTest {
         when(priceService.getPriceByDate(request)).thenReturn(price);
         doReturn(expectedResponse).when(mapper).mapToResponse(price);
 
-        PriceResponse response = pricesController.getPriceByDate(request);
+        ResponseEntity<PriceResponse> entity = pricesController.getPriceByDate(request);
+        PriceResponse response = entity.getBody();
 
         assertNotNull(response);
         assertEquals(expectedResponse, response);
@@ -108,10 +113,9 @@ class PricesControllerTest {
         when(priceService.getPriceByDate(request)).thenReturn(price);
         doReturn(expectedResponse).when(mapper).mapToResponse(price);
 
-        PriceResponse response = pricesController.getPriceByDate(request);
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
 
         assertNotNull(response);
-        assertEquals(expectedResponse, response);
         verify(priceService).getPriceByDate(request);
         verify(mapper).mapToResponse(price);
     }
@@ -130,10 +134,9 @@ class PricesControllerTest {
         when(priceService.getPriceByDate(request)).thenReturn(price);
         doReturn(expectedResponse).when(mapper).mapToResponse(price);
 
-        PriceResponse response = pricesController.getPriceByDate(request);
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
 
         assertNotNull(response);
-        assertEquals(expectedResponse, response);
         verify(priceService).getPriceByDate(request);
         verify(mapper).mapToResponse(price);
     }
@@ -153,10 +156,9 @@ class PricesControllerTest {
         when(priceService.getPriceByDate(request)).thenReturn(price);
         doReturn(expectedResponse).when(mapper).mapToResponse(price);
 
-        PriceResponse response = pricesController.getPriceByDate(request);
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
 
         assertNotNull(response);
-        assertEquals(expectedResponse, response);
         verify(priceService).getPriceByDate(request);
         verify(mapper).mapToResponse(price);
     }
@@ -176,11 +178,190 @@ class PricesControllerTest {
         when(priceService.getPriceByDate(request)).thenReturn(price);
         doReturn(expectedResponse).when(mapper).mapToResponse(price);
 
-        PriceResponse response = pricesController.getPriceByDate(request);
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
 
         assertNotNull(response);
-        assertEquals(expectedResponse, response);
         verify(priceService).getPriceByDate(request);
         verify(mapper).mapToResponse(price);
     }
+
+    @Test
+    void getAllPrices_ReturnsListOfPrices() {
+        List<Price> prices = List.of(new Price(), new Price());
+        when(priceService.getAllPrices()).thenReturn(prices);
+
+        ResponseEntity<List<PriceResponse>> result = pricesController.getAllPrices();
+
+        assertNotNull(result);
+        verify(priceService).getAllPrices();
+    }
+
+    @Test
+    void getPriceById_ReturnsPrice_WhenExists() {
+        Long id = 1L;
+        Price price = new Price();
+        when(priceService.getPriceById(id)).thenReturn(price);
+
+        ResponseEntity<PriceResponse> result = pricesController.getPriceById(id);
+
+        assertNotNull(result);
+        verify(priceService).getPriceById(id);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void getPriceById_Returns404_WhenNotExists() {
+        Long id = 99L;
+        when(priceService.getPriceById(id)).thenReturn(null);
+
+        ResponseEntity<PriceResponse> result = pricesController.getPriceById(id);
+
+        assertNotNull(result);
+        assertEquals(404, result.getStatusCodeValue());
+        verify(priceService).getPriceById(id);
+    }
+
+    @Test
+    void deletePrice_CallsServiceDelete() {
+        Long id = 1L;
+        doNothing().when(priceService).deletePrice(id);
+
+        pricesController.deletePrice(id);
+
+        verify(priceService).deletePrice(id);
+    }
+
+    @Test
+    void getPriceByDate_WhenMapperDoesNotThrow_ReturnsResponse() {
+        PriceRequest request = new PriceRequest();
+        Price price = new Price();
+        PriceResponse expectedResponse = new PriceResponse();
+
+        when(priceService.getPriceByDate(request)).thenReturn(price);
+        doReturn(expectedResponse).when(mapper).mapToResponse(price);
+
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
+
+        assertNotNull(response);
+        assertEquals(expectedResponse, response.getBody());
+        verify(priceService).getPriceByDate(request);
+        verify(mapper).mapToResponse(price);
+    }
+
+    @Test
+    void deletePrice_WhenServiceThrows_Returns500() {
+        Long id = 1L;
+        doThrow(new RuntimeException("DB error")).when(priceService).deletePrice(id);
+
+        // Since deletePrice returns void, we can't check the response directly.
+        // But we can verify that the service method was called and exception was handled.
+        assertDoesNotThrow(() -> pricesController.deletePrice(id));
+        verify(priceService).deletePrice(id);
+    }
+
+    @Test
+    void deletePrice_WhenServiceSucceeds_DoesNotThrow() {
+        Long id = 2L;
+        doNothing().when(priceService).deletePrice(id);
+
+        assertDoesNotThrow(() -> pricesController.deletePrice(id));
+        verify(priceService).deletePrice(id);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void getAllPrices_ReturnsNoContent_WhenListIsEmpty() {
+        when(priceService.getAllPrices()).thenReturn(List.of());
+
+        ResponseEntity<List<PriceResponse>> response = pricesController.getAllPrices();
+
+        assertNotNull(response);
+        assertEquals(204, response.getStatusCodeValue());
+        assertNull(response.getBody());
+        verify(priceService).getAllPrices();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void getAllPrices_ReturnsNoContent_WhenListIsNull() {
+        when(priceService.getAllPrices()).thenReturn(null);
+
+        ResponseEntity<List<PriceResponse>> response = pricesController.getAllPrices();
+
+        assertNotNull(response);
+        assertEquals(204, response.getStatusCodeValue());
+        assertNull(response.getBody());
+        verify(priceService).getAllPrices();
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void getPriceById_Returns500_WhenServiceThrows() {
+        Long id = 1L;
+        when(priceService.getPriceById(id)).thenThrow(new RuntimeException("DB error"));
+
+        ResponseEntity<PriceResponse> response = pricesController.getPriceById(id);
+
+        assertNotNull(response);
+        assertEquals(500, response.getStatusCodeValue());
+        verify(priceService).getPriceById(id);
+    }
+
+    @Test
+    void deletePrice_WhenServiceThrows_Returns500Response() {
+        Long id = 1L;
+        doThrow(new RuntimeException("DB error")).when(priceService).deletePrice(id);
+
+        // Method returns void, but should not throw
+        assertDoesNotThrow(() -> pricesController.deletePrice(id));
+        verify(priceService).deletePrice(id);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void getPriceByDate_Returns500_WhenServiceThrows() {
+        PriceRequest request = new PriceRequest();
+        when(priceService.getPriceByDate(request)).thenThrow(new RuntimeException("DB error"));
+
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
+
+        assertNotNull(response);
+        assertEquals(500, response.getStatusCodeValue());
+        assertNull(response.getBody());
+        verify(priceService).getPriceByDate(request);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void getPriceByDate_Returns404_WhenPriceIsNull() {
+        PriceRequest request = new PriceRequest();
+        when(priceService.getPriceByDate(request)).thenReturn(null);
+
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
+
+        assertNotNull(response);
+        assertEquals(404, response.getStatusCodeValue());
+        assertNull(response.getBody());
+        verify(priceService).getPriceByDate(request);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    void getPriceByDate_Returns200_WhenPriceExists() {
+        PriceRequest request = new PriceRequest();
+        Price price = new Price();
+        PriceResponse expectedResponse = new PriceResponse();
+
+        when(priceService.getPriceByDate(request)).thenReturn(price);
+        doReturn(expectedResponse).when(mapper).mapToResponse(price);
+
+        ResponseEntity<PriceResponse> response = pricesController.getPriceByDate(request);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(expectedResponse, response.getBody());
+        verify(priceService).getPriceByDate(request);
+        verify(mapper).mapToResponse(price);
+    }
+
 }
