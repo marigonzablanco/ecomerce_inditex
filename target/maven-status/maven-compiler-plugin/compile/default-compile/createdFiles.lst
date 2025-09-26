@@ -1,10 +1,11 @@
 com\ecomerce\prices\Controller\PricesController.class
 com\ecomerce\prices\repository\PriceRepositoryImpl.class
 com\ecomerce\prices\Controller\PriceRequest.class
-com\ecomerce\prices\PricesApplication.class
+com\ecomerce\prices\service\PriceServiceImpl.class
 javax\persistence\EntityManager.class
+com\ecomerce\prices\repository\PriceRepository.class
+com\ecomerce\prices\PricesApplication.class
 com\ecomerce\prices\service\PriceService.class
 com\ecomerce\prices\entities\Price.class
-com\ecomerce\prices\repository\PriceRepository.class
 com\ecomerce\prices\Controller\PriceMappertoPriceResponse.class
 com\ecomerce\prices\Controller\PriceResponse.class

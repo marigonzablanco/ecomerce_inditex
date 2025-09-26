@@ -1,1 +1,8 @@
+javax\persistence\EntityManagerTest.class
 com\ecomerce\prices\PricesApplicationTests.class
+com\ecomerce\prices\Controller\PriceRequestTest.class
+com\ecomerce\prices\Controller\PriceResponseTest.class
+com\ecomerce\prices\Controller\PriceMappertoPriceResponseTest.class
+com\ecomerce\prices\Controller\PricesControllerTest.class
+com\ecomerce\prices\repository\PriceRepositoryImplTest.class
+com\ecomerce\prices\service\PriceServiceImplTest.class
